@@ -55,9 +55,10 @@ jobs:
       #  run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
         
       - name: Stop and remove existing container
+        continue-on-error: true
         run: |
-          docker stop ${{ env.IMAGE_NAME }} || true
-          docker rm ${{ env.IMAGE_NAME }} || true
+          docker stop ${{ env.IMAGE_NAME }} 2>$null
+          docker rm ${{ env.IMAGE_NAME }} 2>$null
           
       - name: Pull newest image from Docker Hub
         run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
