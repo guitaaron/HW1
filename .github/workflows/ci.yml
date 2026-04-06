@@ -43,3 +43,29 @@ jobs:
           # Utilizing GitHub action cache for optimized docker builds
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    needs: docker-build-push
+    # Deploy only after a successful build & push, and avoid running it on standard pull requests
+    if: github.event_name != 'pull_request'
+    runs-on: self-hosted
+    
+    steps:
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        
+      - name: Stop and remove existing container
+        run: |
+          docker stop ${{ env.IMAGE_NAME }} || true
+          docker rm ${{ env.IMAGE_NAME }} || true
+          
+      - name: Pull newest image from Docker Hub
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+        
+      - name: Run new container
+        run: |
+          docker run -d \
+            --name ${{ env.IMAGE_NAME }} \
+            -p 8000:8000 \
+            --restart unless-stopped \
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
