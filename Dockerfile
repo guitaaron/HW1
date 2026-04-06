@@ -6,8 +6,8 @@ WORKDIR /app
 
 # Install system dependencies required for OpenCV and deepface
 # We clean up the apt cache to keep the image size minimal
-RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
